@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sultan Zlatko vs Osvajači Balkana</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #111;
+      font-family: 'Arial', sans-serif;
+    }
+
+    /* Početni ekran */
+    #start-screen {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000c;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    #blue-circle {
+      width: 120px;
+      height: 120px;
+      background: royalblue;
+      border-radius: 50%;
+      margin-bottom: 20px;
+    }
+
+    #title {
+      font-size: 32px;
+      color: white;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px black;
+    }
+
+    .level-btn {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background: linear-gradient(to top, #222, #444);
+    }
+
+    #player {
+      position: absolute;
+      width: 60px;
+      height: auto;
+      bottom: 20px;
+      left: 50px;
+    }
+
+    .bullet {
+      position: absolute;
+      width: 10px;
+      height: 5px;
+      background: red;
+    }
+
+    .enemy {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: black;
+      border: 2px solid crimson;
+      border-radius: 10%;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Početni ekran -->
+  <div id="start-screen">
+    <div id="title">Sultan Zlatko</div>
+    <div id="blue-circle"></div>
+    <button class="level-btn" style="background-color: green;" onclick="startGame(2000)">Lak</button>
+    <button class="level-btn" style="background-color: orange;" onclick="startGame(1200)">Normalan</button>
+    <button class="level-btn" style="background-color: red;" onclick="startGame(600)">Težak</button>
+  </div>
+
+  <!-- Igra -->
+  <div id="game">
+    <img id="player" src="https://i.imgur.com/BhHqBmn.png" alt="Sultan Zlatko" style="top: 200px;">
+    <div id="score">Score: 0</div>
+  </div>
+
+  <script>
+    const game = document.getElementById('game');
+    const player = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
+    const startScreen = document.getElementById('start-screen');
+    let enemyInterval;
+    let score = 0;
+
+    function startGame(difficultySpeed) {
+      startScreen.style.display = 'none';
+      score = 0;
+      scoreEl.textContent = 'Score: 0';
+      enemyInterval = setInterval(spawnEnemy, difficultySpeed);
+    }
+
+    function spawnEnemy() {
+      const enemy = document.createElement('div');
+      enemy.className = 'enemy';
+      enemy.style.left = window.innerWidth + 'px';
+      enemy.style.top = Math.random() * (window.innerHeight - 60) + 'px';
+      game.appendChild(enemy);
+
+      const move = setInterval(() => {
+        enemy.style.left = enemy.offsetLeft - 5 + 'px';
+        if (enemy.offsetLeft < 0) {
+          clearInterval(move);
+          alert('Poraz! Osvajači su stigli!');
+          location.reload();
+        }
+      }, 30);
+    }
+
+    function shoot() {
+      const bullet = document.createElement('div');
+      bullet.className = 'bullet';
+      bullet.style.left = (player.offsetLeft + 50) + 'px';
+      bullet.style.top = (player.offsetTop + 25) + 'px';
+      game.appendChild(bullet);
+
+      const move = setInterval(() => {
+        bullet.style.left = bullet.offsetLeft + 10 + 'px';
+        if (bullet.offsetLeft > window.innerWidth) {
+          bullet.remove();
+          clearInterval(move);
+        }
+
+        document.querySelectorAll('.enemy').forEach(enemy => {
+          if (
+            bullet.offsetLeft > enemy.offsetLeft &&
+            bullet.offsetLeft < enemy.offsetLeft + 40 &&
+            bullet.offsetTop > enemy.offsetTop &&
+            bullet.offsetTop < enemy.offsetTop + 40
+          ) {
+            enemy.remove();
+            bullet.remove();
+            clearInterval(move);
+            score += 1;
+            scoreEl.textContent = 'Score: ' + score;
+          }
+        });
+      }, 20);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp' && player.offsetTop > 0) {
+        player.style.top = (player.offsetTop - 20) + 'px';
+      }
+      if (e.key === 'ArrowDown' && player.offsetTop < window.innerHeight - 80) {
+        player.style.top = (player.offsetTop + 20) + 'px';
+      }
+      if (e.key === ' ') {
+        shoot();
+      }
+    });
+  </script>
+</body>
+</html>
